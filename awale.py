@@ -2,6 +2,17 @@
 from itertools import cycle, islice, takewhile
 from functools import partial
 
+def game_over(game, scores):
+    return any(s >= 25 for s in scores) or sum(game) <= 6
+
+def winner(scores):
+    if scores[0] == scores[1]:
+        return None
+    elif scores[0] > scores[1]:
+        return 0
+    else:
+        return 1
+
 def player_id(game, index):
     """ _index_ belongs to player 0 or 1 """
     l = len(game)/2
