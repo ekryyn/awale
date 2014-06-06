@@ -9,7 +9,7 @@ def player_id(game, index):
 
 def can_play(game, player, index):
     """ _player_ can play on _index_ """
-    return player == player_id(game, index)
+    return player == player_id(game, index) and game[index]
 
 def can_eat(game, player, index):
     """ player can eat index """
@@ -33,7 +33,6 @@ def step_game(game, index):
     [next(it) for _ in range(index)] # forward until index+1
 
     for i in islice(it, nb_stone):
-        print(i)
         game[i] += 1
 
     return game, i
@@ -65,6 +64,50 @@ def display_game(game, scores):
     print("(%2d) Player 1 -> |  %s  |" % (scores[0], "".join(map(display_cell, p0_line))))
     print("                      %s" % "   ".join('ABCDEF'))
 
-game = [4] * 12
-scores = [0, 0]
-display_game(game, scores)
+
+class AwaleException(Exception): pass
+
+class WrongMove(AwaleException): pass
+
+class GameState(object):
+    current_player = 0
+    game = [4]*12
+    scores = [0, 0]
+    letters = dict((l, i) for i, l in enumerate(list("ABCDEFfedcba")))
+
+    def switch_current_player(self):
+        self.current_player = 0 if self.current_player else 1
+
+    def play(self, player, letter):
+        if player != self.current_player:
+            raise AwaleException("This is not your turn !")
+
+        try:
+            index = self.letters[letter]
+        except KeyError:
+            raise WrongMove("%s is not a valid move." % letter)
+
+        if not can_play(self.game, player, index):
+            raise WrongMove("You can't play this !")
+
+        # play
+        self.game, last = step_game(self.game, index)
+        # eat
+        self.game, self.scores = eat_stones(self.game, last, player, self.scores)
+        # switch turn
+        self.switch_current_player()
+
+    def display(self):
+        display_game(self.game, self.scores)
+
+
+g = GameState()
+g.display()
+g.play(0, 'E')
+g.display()
+g.play(1, 'c')
+g.display()
+g.play(0, 'D')
+g.display()
+g.play(1, 'a')
+g.display()
