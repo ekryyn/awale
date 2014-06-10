@@ -70,10 +70,12 @@ def display_game(game, scores):
     half = int(len(game)/2)
     p0_line = game[:half]
     p1_line = reversed(game[half:])
-    print("                      %s" % "   ".join('abcdef'))
-    print("                 |  %s  | <- Player 2 (%2d)" % ("".join(map(display_cell, p1_line)), scores[1]))
-    print("(%2d) Player 1 -> |  %s  |" % (scores[0], "".join(map(display_cell, p0_line))))
-    print("                      %s" % "   ".join('ABCDEF'))
+    o = ''
+    o += ("                      %s\n" % "   ".join('abcdef'))
+    o += ("                 |  %s  | <- Player 2 (%2d)\n" % ("".join(map(display_cell, p1_line)), scores[1]))
+    o += ("(%2d) Player 1 -> |  %s  |\n" % (scores[0], "".join(map(display_cell, p0_line))))
+    o += ("                      %s\n" % "   ".join('ABCDEF'))
+    return o
 
 
 class AwaleException(Exception): pass
@@ -108,8 +110,11 @@ class GameState(object):
         # switch turn
         self.switch_current_player()
 
-    def display(self):
-        display_game(self.game, self.scores)
+    def display(self, as_str=False):
+        if as_str:
+            return display_game(self.game, self.scores)
+        else:
+            print display_game(self.game, self.scores)
 
 
 if __name__ == '__main__':
