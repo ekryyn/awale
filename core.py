@@ -72,8 +72,8 @@ def display_game(game, scores):
     p1_line = reversed(game[half:])
     o = ''
     o += ("                      %s\n" % "   ".join('abcdef'))
-    o += ("                 |  %s  | <- Player 2 (%2d)\n" % ("".join(map(display_cell, p1_line)), scores[1]))
-    o += ("(%2d) Player 1 -> |  %s  |\n" % (scores[0], "".join(map(display_cell, p0_line))))
+    o += ("                |  %s  | <- Model 2 (%2d)\n" % ("".join(map(display_cell, p1_line)), scores[1]))
+    o += ("(%2d) Model 1 -> |  %s  |\n" % (scores[0], "".join(map(display_cell, p0_line))))
     o += ("                      %s\n" % "   ".join('ABCDEF'))
     return o
 
@@ -114,7 +114,7 @@ class GameState(object):
         if as_str:
             return display_game(self.game, self.scores)
         else:
-            print display_game(self.game, self.scores)
+            print(display_game(self.game, self.scores))
 
 
 if __name__ == '__main__':

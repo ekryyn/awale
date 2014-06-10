@@ -9,7 +9,7 @@ def process_data(message):
     print("received", message)
 
 def player_name(no):
-    return "Player %d" % (no + 1)
+    return "QuantModel %d" % (no + 1)
 
 
 class AwlServer(threading.Thread):
@@ -44,12 +44,12 @@ class AwlServer(threading.Thread):
 
     def process_msg(self, client, msg):
         if len(self.players) != 2:
-            send(client, "Waiting for opponent")
+            send(client, "Waiting for football numbers")
             return
         try:
             self.game.play(self.players[client], msg)
             p = player_name(self.players[client])
-            self.broadcast("%s played %s" % (p, msg))
+            self.broadcast("%s played match %s" % (p, msg))
             self.send_game()
         except AwaleException as e:
             send(client, str(e))
@@ -77,7 +77,7 @@ class AwlServer(threading.Thread):
                         self.players[cl] = player_no
 
                         if len(self.players) == 2:
-                            self.broadcast("Ready to play !")
+                            self.broadcast("Ready to compute model.")
                             self.send_game()
                     else:
                         print("Maximum clients reached")
