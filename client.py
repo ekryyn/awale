@@ -3,7 +3,7 @@ import socket
 import sys
 import time
 
-from protocol import extract_msg
+from protocol import extract_msg, send, decode_message
 
 PORT = 1889
 
@@ -14,12 +14,7 @@ except (ImportError, AttributeError):
     pass
 
 
-def send(sock, msg):
-    d = "%d\n\n%s" % (len(msg), msg)
-    sock.send(d)
-
-
-def run(tcp_ip, tcp_port):
+def run(tcp_ip, tcp_port, gui):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("connecting to", tcp_ip)
     sock.connect((tcp_ip, tcp_port))
@@ -32,7 +27,7 @@ def run(tcp_ip, tcp_port):
         for s in rds:
             if s is sys.stdin:
                 cmd = s.readline()
-                send(sock, cmd.strip())
+                send(sock, 'play', cmd.strip())
             if s is sock:
                 d = s.recv(2048)
                 if d:
@@ -44,7 +39,8 @@ def run(tcp_ip, tcp_port):
         # manage data
         msg, remain = extract_msg(data)
         if msg:
-            print(msg)
+            mtype, mval = decode_message(msg)
+            gui.process_message(mtype, mval)
         data = remain
     sock.close()
 

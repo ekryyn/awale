@@ -1,8 +1,9 @@
+import json
 import socket
 import select
 import threading
 
-from protocol import extract_msg, send
+from protocol import extract_msg, send, decode_message
 from core import GameState, AwaleException
 
 def process_data(message):
@@ -32,27 +33,34 @@ class AwlServer(threading.Thread):
         self.clients = {}
         self.players = {}
 
-    def broadcast(self, msg):
+    def broadcast(self, msg_type, msg_val):
         for c in self.clients:
-            send(c, msg)
+            send(c, msg_type, msg_val)
 
     def send_game(self, client=None):
+        state = {
+            'scores': self.game.scores,
+            'game': self.game.game
+        }
         if client:
-            send(client, self.game.display(True))
+            send(client, 'game_state', state)
         else:
-            self.broadcast(self.game.display(True))
+            self.broadcast('game_state', state)
 
     def process_msg(self, client, msg):
         if len(self.players) != 2:
-            send(client, "Waiting for football numbers")
+            send(client, 'info', "Waiting for opponent")
             return
-        try:
-            self.game.play(self.players[client], msg)
-            p = player_name(self.players[client])
-            self.broadcast("%s played match %s" % (p, msg))
-            self.send_game()
-        except AwaleException as e:
-            send(client, str(e))
+        msg_type, msg = decode_message(msg)
+
+        if msg_type == 'play':
+            try:
+                self.game.play(self.players[client], msg)
+                p = player_name(self.players[client])
+                self.broadcast('info', "%s played %s" % (p, msg))
+                self.send_game()
+            except AwaleException as e:
+                send(client, 'error', str(e))
 
     def run(self):
         print("running...")
@@ -73,11 +81,11 @@ class AwlServer(threading.Thread):
                         self.ins.append(cl)
                         self.clients[cl] = b''
                         player_no = len(self.players)
-                        send(cl, "welcome %s" % player_name(player_no))
+                        send(cl, 'info', "welcome %s" % player_name(player_no))
                         self.players[cl] = player_no
 
                         if len(self.players) == 2:
-                            self.broadcast("Ready to compute model.")
+                            self.broadcast('info', "Ready to play")
                             self.send_game()
                     else:
                         print("Maximum clients reached")
@@ -93,6 +101,7 @@ class AwlServer(threading.Thread):
                         self.clients.pop(s)
                         if len(self.players) == 2:
                             self.broadcast(
+                                'info',
                                 "%s left. Exiting..." % \
                                 player_name(self.players[s])
                             )
