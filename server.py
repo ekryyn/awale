@@ -4,13 +4,13 @@ import select
 import threading
 
 from protocol import extract_msg, send, decode_message
-from core import GameState, AwaleException
+from core import GameState, AwaleException, game_over, winner
 
 def process_data(message):
     print("received", message)
 
 def player_name(no):
-    return "QuantModel %d" % (no + 1)
+    return "Player %d" % (no + 1)
 
 
 class AwlServer(threading.Thread):
@@ -61,6 +61,19 @@ class AwlServer(threading.Thread):
                 self.send_game()
             except AwaleException as e:
                 send(client, 'error', str(e))
+            if game_over(self.game.game, self.game.scores):
+                win_player = winner(self.game.scores)
+                if win_player is not None:
+                    self.broadcast(
+                        'info',
+                        "%s wins !" % player_name(win_player)
+                    )
+                else:
+                    self.broadcast(
+                        'info',
+                        "Draw !"
+                    )
+                self.running = False
 
     def run(self):
         print("running...")
