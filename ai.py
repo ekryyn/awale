@@ -1,12 +1,16 @@
 import random
+import core
+
+def available_plays(game, player_id):
+    plays = "ABCDEFfedcba"
+    return [
+        letter for i, letter in enumerate(list(plays))
+        if core.can_play(game, player_id, i)
+    ]
 
 
 class RandomAI(object):
     def process_message(self, mtype, mval):
-        available_plays = {
-            0: "ABCDEF",
-            1: "abcdef",
-        }
         if mtype == 'player_id':
             # get my id (0 or 1)
             self.myid = mval
@@ -16,7 +20,7 @@ class RandomAI(object):
                 # yes, then play:
                 # choose a random valid play
                 play = random.choice(
-                    available_plays[self.myid]
+                    available_plays(mval['game'], self.myid)
                 )
                 return play
         return None
