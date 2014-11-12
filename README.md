@@ -20,10 +20,8 @@ Where SIZE is the ASCII length of JSONDATA (A number)
 and JSONDATA is a JSon Object with 2 attributes:
 
  - __type__: a string that could be :
-   - info
-   - game\_state
-   - play
-   - error
+    - info
+    - game\_state
+    - play
+    - error
  - __message__: can be any valid json object
-
-
