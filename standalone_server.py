@@ -1,8 +1,7 @@
-import sys
 from server import AwlServer
-import client
 from gui.console import Console
 import time
+
 
 def create_server():
     s = AwlServer()

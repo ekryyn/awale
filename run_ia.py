@@ -2,7 +2,6 @@ import sys
 import client
 from ai import RandomAI
 from gui.console import Console
-import os
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:

@@ -5,6 +5,7 @@ from functools import partial
 def game_over(game, scores):
     return any(s >= 25 for s in scores) or sum(game) <= 6
 
+
 def winner(scores):
     if scores[0] == scores[1]:
         return None
@@ -13,14 +14,17 @@ def winner(scores):
     else:
         return 1
 
+
 def player_id(game, index):
     """ _index_ belongs to player 0 or 1 """
     l = len(game)/2
     return 0 if index < l else 1
 
+
 def can_play(game, player, index):
     """ _player_ can play on _index_ """
     return player == player_id(game, index) and game[index]
+
 
 def can_eat(game, player, index):
     """ player can eat index """
@@ -30,9 +34,11 @@ def can_eat(game, player, index):
         player != player_id(game, index)
     )
 
+
 def rotate(li, x):
     """ return a list rotated on _x_ """
     return li[-x % len(li):] + li[:-x % len(li)]
+
 
 def step_game(game, index):
     """ return next game state, and last modified index """
@@ -47,6 +53,7 @@ def step_game(game, index):
         game[i] += 1
 
     return game, i
+
 
 def eat_stones(game, last, player, scores):
     """
@@ -63,8 +70,10 @@ def eat_stones(game, last, player, scores):
         game[i] = 0
     return game, scores
 
+
 def display_cell(c):
     return "[%2d]" % c
+
 
 def display_game(game, scores):
     half = int(len(game)/2)
@@ -80,7 +89,9 @@ def display_game(game, scores):
 
 class AwaleException(Exception): pass
 
+
 class WrongMove(AwaleException): pass
+
 
 class GameState(object):
     current_player = 0

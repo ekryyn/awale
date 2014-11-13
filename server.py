@@ -1,4 +1,3 @@
-import json
 import socket
 import select
 import threading
@@ -6,8 +5,10 @@ import threading
 from protocol import extract_msg, send, decode_message
 from core import GameState, AwaleException, game_over, winner
 
+
 def process_data(message):
     print("received", message)
+
 
 def player_name(no):
     return "Player %d" % (no + 1)

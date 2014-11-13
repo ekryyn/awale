@@ -3,7 +3,7 @@ import json
 
 def extract_msg(data):
     pos = data.find('\n\n')
-    message= ''
+    message = ''
     if pos > 0:
         expected_len = int(data[:pos])
         msg = data[(pos+2):]
@@ -11,10 +11,12 @@ def extract_msg(data):
             message, data = msg[:expected_len], msg[expected_len:]
     return message, data
 
+
 def send(sock, msg_type, msg_val):
     msg = json.dumps({'type': msg_type, 'message': msg_val})
     d = "%d\n\n%s" % (len(msg), msg)
     return sock.send(d)
+
 
 def decode_message(msg):
     obj = json.loads(msg)

@@ -1,7 +1,6 @@
 import select
 import socket
 import sys
-import time
 
 from protocol import extract_msg, send, decode_message
 
@@ -18,9 +17,12 @@ def run(tcp_ip, tcp_port, gui, ai=None):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("connecting to", tcp_ip)
     sock.connect((tcp_ip, tcp_port))
-#    sock.setblocking(0)
+
     running = True
-    inputs = [sock,]
+    inputs = [sock, ]
+
+    # If no AI, this thread will manage keyboard inputs
+    # TODO : remove for a more advanced GUI
     if ai is None:
         inputs.append(sys.stdin)
 
@@ -29,6 +31,7 @@ def run(tcp_ip, tcp_port, gui, ai=None):
         rds, wts, ers = select.select(inputs, [], [], 0)
         for s in rds:
             if s is sys.stdin:
+                # Managing keyboard input
                 cmd = s.readline()
                 send(sock, 'play', cmd.strip())
             if s is sock:

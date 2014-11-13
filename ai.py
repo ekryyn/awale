@@ -1,6 +1,7 @@
 import random
 import core
 
+
 def available_plays(game, player_id):
     plays = "ABCDEFfedcba"
     return [
