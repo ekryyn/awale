@@ -22,8 +22,7 @@ extract_msg <- function(str){
   return(list(message=message, data=str))  
 }
 
-plays = c('a', 'b', 'c')
-cpt = 1
+
 sock <- socketConnection(host='127.0.0.1', port=1889, server=FALSE)
 ins = list(sock)
 data <- ""
@@ -48,8 +47,14 @@ while(TRUE){
       if(obj[['message']][['to_play']] == player_id)
       {
         # if it's my turn to play :
-        send(sock, 'play', plays[cpt])
-        cpt <- cpt + 1
+        print(str(obj))
+        index = sample(
+          which(obj[['message']][['game']][1:6+6*player_id] != 0),
+          size=1
+        ) + 6*player_id
+        a = "ABCDEFfedcba"
+        letter = substr(a, start=index, stop=index)
+        send(sock, 'play', letter)
       }
     }
   }
