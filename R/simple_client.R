@@ -1,6 +1,6 @@
 send <- function(conn, message_type, message){
   msg = toJSON(list(type=message_type, message=message))
-  content = paste0(nchar(msg), "\n\n", msg, sep='')
+  content = paste0(nchar(msg)+1, "\n\n", msg, sep='')
   
   cat(content)
   writeChar(content, conn, useBytes=TRUE)
