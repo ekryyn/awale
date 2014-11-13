@@ -9,6 +9,10 @@ def extract_msg(data):
         msg = data[(pos+2):]
         if len(msg) >= expected_len:
             message, data = msg[:expected_len], msg[expected_len:]
+            # some clients may send null terminated strings.
+            # we'll then end up with a "ramaining" containing a NULL char
+            # at the beginning
+            data = data.strip("\x00")
     return message, data
 
 
