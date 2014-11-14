@@ -1,7 +1,7 @@
 import sys
-import client
-from ai import RandomAI
-from gui.console import Console
+from awale import client
+from awale.random_ai import RandomAI
+from awale.gui.console import Console
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:

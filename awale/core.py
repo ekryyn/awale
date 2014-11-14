@@ -2,6 +2,7 @@
 from itertools import cycle, islice, takewhile
 from functools import partial
 
+
 def game_over(game, scores):
     return any(s >= 25 for s in scores) or sum(game) <= 6
 
@@ -71,22 +72,6 @@ def eat_stones(game, last, player, scores):
     return game, scores
 
 
-def display_cell(c):
-    return "[%2d]" % c
-
-
-def display_game(game, scores):
-    half = int(len(game)/2)
-    p0_line = game[:half]
-    p1_line = reversed(game[half:])
-    o = ''
-    o += ("                      %s\n" % "   ".join('abcdef'))
-    o += ("                |  %s  | <- Model 2 (%2d)\n" % ("".join(map(display_cell, p1_line)), scores[1]))
-    o += ("(%2d) Model 1 -> |  %s  |\n" % (scores[0], "".join(map(display_cell, p0_line))))
-    o += ("                      %s\n" % "   ".join('ABCDEF'))
-    return o
-
-
 class AwaleException(Exception): pass
 
 
@@ -121,21 +106,3 @@ class GameState(object):
         # switch turn
         self.switch_current_player()
 
-    def display(self, as_str=False):
-        if as_str:
-            return display_game(self.game, self.scores)
-        else:
-            print(display_game(self.game, self.scores))
-
-
-if __name__ == '__main__':
-    g = GameState()
-    g.display()
-    g.play(0, 'E')
-    g.display()
-    g.play(1, 'c')
-    g.display()
-    g.play(0, 'D')
-    g.display()
-    g.play(1, 'a')
-    g.display()

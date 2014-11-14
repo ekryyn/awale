@@ -1,4 +1,17 @@
-from core import display_game
+def display_cell(c):
+    return "[%2d]" % c
+
+
+def display_game(game, scores):
+    half = int(len(game)/2)
+    p0_line = game[:half]
+    p1_line = reversed(game[half:])
+    o = ''
+    o += ("                      %s\n" % "   ".join('abcdef'))
+    o += ("                |  %s  | <- Model 2 (%2d)\n" % ("".join(map(display_cell, p1_line)), scores[1]))
+    o += ("(%2d) Model 1 -> |  %s  |\n" % (scores[0], "".join(map(display_cell, p0_line))))
+    o += ("                      %s\n" % "   ".join('ABCDEF'))
+    return o
 
 
 class Console(object):

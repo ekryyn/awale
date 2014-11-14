@@ -1,5 +1,5 @@
-from server import AwlServer
-from gui.console import Console
+from awale.server import AwlServer
+from awale.gui.console import Console
 import time
 
 
