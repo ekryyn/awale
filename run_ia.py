@@ -27,6 +27,8 @@ if __name__ == '__main__':
             valid_moves = [int(a) for a in valid_moves.split(' ')]
         except ValueError:
             sys.stderr.write("No valid move :/\n")
+            from awale.gui.console import display_game
+            sys.stderr.write(display_game(game, scores) + "\n")
             running = False
 
         print ai.next_move(game, scores, to_play, valid_moves)

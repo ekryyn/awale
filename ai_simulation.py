@@ -1,6 +1,7 @@
 from itertools import cycle
 import subprocess
 from awale.core import GameState, can_play, winner
+from awale.gui.console import display_game
 
 
 def block_until_line(stream):
@@ -27,6 +28,7 @@ class Player(object):
     def __init__(self, pid, process):
         self.pid = pid
         self.process = process
+        self.victories = 0
 
     @property
     def stdout(self):
@@ -88,13 +90,27 @@ class App(object):
             except ValueError:
                 print("Error while processing move for player %d" % p.pid)
                 print("Exit.")
+                print("Last was:")
+                print(display_game(last_game, last_scores))
+                print("played %s" % move)
                 self.stop()
             else:
                 # play it
+                last_game = game.game[:]
+                last_scores = game.scores[:]
                 game.play(p.pid, LETTERS[move])
+                # print(display_game(game.game, game.scores))
 
             if game.over():
-                print("Finished, winner: %s" % winner(game.scores))
+                # print("Finished, winner: %s" % winner(game.scores))
+                win_id = winner(game.scores)
+                if win_id is not None:
+                    # not draw
+                    p_winner = next(
+                        p for p in players
+                        if p.pid == win_id
+                    )
+                    p_winner.victories += 1
                 over = True
 
     def run(self, number_of_games=1):
@@ -111,6 +127,15 @@ class App(object):
             self.play_game(players)
             self.remaining_games -= 1
 
+        # scores
+        for p in players:
+            print("Player %d : %d victories." % (p.pid, p.victories))
+
+        # import math
+        # p = float(players[0].victories)/(players[0].victories+players[1].victories)
+        # toto = abs(p - 0.5) > 2 * math.sqrt((p*(1-p))/(players[0].victories+players[1].victories))
+        # print "Toto= %s" % toto
+
         # kill sub processes
         for p in players:
             p.process.terminate()
@@ -118,7 +143,7 @@ class App(object):
 if __name__ == '__main__':
     app = App()
     try:
-        app.run(5)
+        app.run(1000)
     except KeyboardInterrupt:
         app.running = False
         print("Shutting down...")

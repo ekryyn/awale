@@ -63,7 +63,7 @@ class AwlServer(threading.Thread):
                 self.send_game()
             except AwaleException as e:
                 send(client, 'error', str(e))
-            if game_over(self.game.game, self.game.scores):
+            if self.game.over():
                 win_player = winner(self.game.scores)
                 if win_player is not None:
                     self.broadcast(

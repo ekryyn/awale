@@ -3,8 +3,26 @@ from itertools import cycle, islice, takewhile
 from functools import partial
 
 
-def game_over(game, scores):
-    return any(s >= 25 for s in scores) or sum(game) <= 6
+def is_starving(player, game):
+    """
+    return True if player has no stone
+    False if he has one or more
+    """
+    stones = sum(
+        a for i, a in enumerate(game)
+        if player == player_id(game, i)
+    )
+    return stones == 0
+
+
+def game_over(game, scores, current_player):
+    return any(s >= 25 for s in scores) \
+        or sum(game) <= 6 \
+        or len(list(m for (i, m) in enumerate(game) if can_play(game, current_player, i))) == 0
+
+
+def other_player(current):
+    return 0 if current else 1
 
 
 def winner(scores):
@@ -24,7 +42,22 @@ def player_id(game, index):
 
 def can_play(game, player, index):
     """ _player_ can play on _index_ """
-    return player == player_id(game, index) and game[index]
+    if player == player_id(game, index) and game[index]:
+        toto = any(
+            map(
+                lambda x: x >= 3,
+                (
+                    x for (i, x) in enumerate(game)
+                    if player_id(game, i) == player
+                )
+            )
+        )
+        if toto:
+            return True
+        after = step_game(game, index)[0]
+        return not is_starving(other_player(player), after)
+
+    return False
 
 
 def can_eat(game, player, index):
@@ -85,10 +118,10 @@ class GameState(object):
     letters = dict((l, i) for i, l in enumerate(list("ABCDEFfedcba")))
 
     def switch_current_player(self):
-        self.current_player = 0 if self.current_player else 1
+        self.current_player = other_player(self.current_player)
 
     def over(self):
-        return game_over(self.game, self.scores)
+        return game_over(self.game, self.scores, self.current_player)
 
     def play(self, player, letter):
         if player != self.current_player:
