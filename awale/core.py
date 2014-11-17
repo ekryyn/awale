@@ -87,6 +87,9 @@ class GameState(object):
     def switch_current_player(self):
         self.current_player = 0 if self.current_player else 1
 
+    def over(self):
+        return game_over(self.game, self.scores)
+
     def play(self, player, letter):
         if player != self.current_player:
             raise AwaleException("This is not your turn !")
