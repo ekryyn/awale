@@ -62,23 +62,23 @@ class App(object):
     Wrapper to easily kill subprocesses
     """
 
-    running = True
+    running = False
+    remaining_games = 0
 
-    def run(self):
+    def stop(self):
+        self.running = False
+        self.remaining_games = 0
+
+    def play_game(self, players):
+
+        # initialize state
         game = GameState()
-
-        players = [
-            Player(0, create_process()),
-            Player(1, create_process())
-        ]
-
         p_cycle = cycle(players)
+        over = False
 
-        while self.running:
+        while self.running and not over:
             p = p_cycle.next()  # next player
             send_state(p.stdin, game)
-
-            # print block_until_line(p.stdout)
 
             # wait for p's move
             ln = block_until_line(p.stdout)
@@ -88,14 +88,28 @@ class App(object):
             except ValueError:
                 print("Error while processing move for player %d" % p.pid)
                 print("Exit.")
-                self.running = False
+                self.stop()
             else:
                 # play it
                 game.play(p.pid, LETTERS[move])
 
             if game.over():
                 print("Finished, winner: %s" % winner(game.scores))
-                self.running = False
+                over = True
+
+    def run(self, number_of_games=1):
+
+        self.running = True
+        self.remaining_games = number_of_games
+
+        players = [
+            Player(0, create_process()),
+            Player(1, create_process())
+        ]
+
+        while self.remaining_games > 0:
+            self.play_game(players)
+            self.remaining_games -= 1
 
         # kill sub processes
         for p in players:
@@ -104,7 +118,7 @@ class App(object):
 if __name__ == '__main__':
     app = App()
     try:
-        app.run()
+        app.run(5)
     except KeyboardInterrupt:
         app.running = False
         print("Shutting down...")
