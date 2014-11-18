@@ -2,7 +2,8 @@ from itertools import cycle
 import subprocess
 from threading import Thread
 from awale.core import valid_moves_indices
-from core import GameState, can_play, winner
+from core import GameState, winner
+import time
 from gui.console import display_game
 
 
@@ -35,6 +36,7 @@ class Player(object):
         self.draws = 0
         self.moves_played = 0
         self.valid_moves_total = 0
+        self.total_time = 0
 
     @property
     def valid_moves_mean(self):
@@ -67,6 +69,13 @@ class Player(object):
     def moves_played_per_game(self):
         try:
             return float(self.moves_played)/self.games_played
+        except ZeroDivisionError:
+            return 0.0
+
+    @property
+    def time_per_turn(self):
+        try:
+            return float(self.total_time)/self.moves_played
         except ZeroDivisionError:
             return 0.0
 
@@ -126,10 +135,13 @@ class App(Thread):
 
         while self.running and not over:
             p = p_cycle.next()  # next player
-            send_state(p.stdin, game)
 
+            tm_before = time.time()
+            send_state(p.stdin, game)
             # wait for p's move
             ln = block_until_line(p.stdout)
+            tm_after = time.time()
+            p.total_time += tm_after - tm_before
 
             try:
                 move = int(ln) - 1
