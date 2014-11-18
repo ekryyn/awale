@@ -1,4 +1,3 @@
-import json
 import socket
 import select
 import threading
@@ -6,8 +5,10 @@ import threading
 from protocol import extract_msg, send, decode_message
 from core import GameState, AwaleException, game_over, winner
 
+
 def process_data(message):
     print("received", message)
+
 
 def player_name(no):
     return "Player %d" % (no + 1)
@@ -40,7 +41,8 @@ class AwlServer(threading.Thread):
     def send_game(self, client=None):
         state = {
             'scores': self.game.scores,
-            'game': self.game.game
+            'game': self.game.game,
+            'to_play': self.game.current_player,
         }
         if client:
             send(client, 'game_state', state)
@@ -61,7 +63,7 @@ class AwlServer(threading.Thread):
                 self.send_game()
             except AwaleException as e:
                 send(client, 'error', str(e))
-            if game_over(self.game.game, self.game.scores):
+            if self.game.over():
                 win_player = winner(self.game.scores)
                 if win_player is not None:
                     self.broadcast(
@@ -83,7 +85,7 @@ class AwlServer(threading.Thread):
                 self.ins,
                 self.outs,
                 self.ins,
-                1
+                0
             )
 
             for s in rds:
@@ -94,7 +96,9 @@ class AwlServer(threading.Thread):
                         self.ins.append(cl)
                         self.clients[cl] = b''
                         player_no = len(self.players)
-                        send(cl, 'info', "welcome %s" % player_name(player_no))
+                        pname = player_name(player_no)
+                        send(cl, 'info', "welcome %s" % pname)
+                        send(cl, 'player_id', player_no)
                         self.players[cl] = player_no
 
                         if len(self.players) == 2:
