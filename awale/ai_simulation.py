@@ -54,10 +54,19 @@ class Player(object):
     def win_percent(self):
         try:
             return (
-                100.0 * self.victories/(
-                    self.victories + self.draws + self.defeats
-                )
+                100.0 * self.victories/self.games_played
             )
+        except ZeroDivisionError:
+            return 0.0
+
+    @property
+    def games_played(self):
+        return self.victories + self.draws + self.defeats
+
+    @property
+    def moves_played_per_game(self):
+        try:
+            return float(self.moves_played)/self.games_played
         except ZeroDivisionError:
             return 0.0
 

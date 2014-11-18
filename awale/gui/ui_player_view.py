@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'player_view.ui'
 #
-# Created: Tue Nov 18 17:00:44 2014
+# Created: Tue Nov 18 17:18:19 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(328, 251)
+        Form.resize(282, 251)
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.groupBox = QtWidgets.QGroupBox(Form)
@@ -82,8 +82,8 @@ class Ui_Form(object):
         self.draws.setText(_translate("Form", "0"))
         self.label_9.setText(_translate("Form", "Vicotry % :"))
         self.win_percent.setText(_translate("Form", "0%"))
-        self.label_10.setText(_translate("Form", "Moves played :"))
+        self.label_10.setText(_translate("Form", "Moves per game :"))
         self.moves_played.setText(_translate("Form", "0"))
-        self.label_12.setText(_translate("Form", "Valid moves mean :"))
+        self.label_12.setText(_translate("Form", "Valid moves per turn :"))
         self.valid_moves_mean.setText(_translate("Form", "0"))
 

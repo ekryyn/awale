@@ -29,7 +29,7 @@ class PlayerView(QWidget):
         self.ui.victories.setText(str(player.victories))
         self.ui.draws.setText(str(player.draws))
         self.ui.defeats.setText(str(player.defeats))
-        self.ui.moves_played.setText(str(player.moves_played))
+        self.ui.moves_played.setText(str(round(player.moves_played_per_game, 2)))
         self.ui.valid_moves_mean.setText(str(round(player.valid_moves_mean, 2)))
 
         self.ui.win_percent.setText(
