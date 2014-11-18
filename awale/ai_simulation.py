@@ -205,16 +205,15 @@ class App(Thread):
         for p in players:
             print("Player %d : %d victories." % (p.pid, p.victories))
 
-        # import math
-        # p = float(players[0].victories)/(players[0].victories+players[1].victories)
-        # toto = abs(p - 0.5) > 2 * math.sqrt((p*(1-p))/(players[0].victories+players[1].victories))
-        # print "Toto= %s" % toto
+        import math
+        p = float(players[0].victories)/(players[0].victories+players[1].victories)
+        chance = abs(p - 0.5) > 2 * math.sqrt((p*(1-p))/(players[0].victories+players[1].victories))
 
         # kill sub processes
         for p in players:
             p.process.terminate()
 
-        self.notify_listeners('on_simulation_finished')
+        self.notify_listeners('on_simulation_finished', chance)
 
 if __name__ == '__main__':
     app = App(

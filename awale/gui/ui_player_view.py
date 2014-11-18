@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'player_view.ui'
 #
-# Created: Tue Nov 18 18:47:35 2014
+# Created: Tue Nov 18 19:03:35 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

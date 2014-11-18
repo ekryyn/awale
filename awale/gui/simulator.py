@@ -38,6 +38,7 @@ class SimulatorWindow(QMainWindow):
         self.ui.progressBar.setRange(0, self.ui.nbGame.value())
         self.ui.progressBar.setValue(0)
         self.ui.progressBar.setEnabled(True)
+        self.ui.startButton.setEnabled(False)
 
     def on_game_finished(self, player1, player2):
         self.ui.progressBar.setValue(
@@ -46,7 +47,11 @@ class SimulatorWindow(QMainWindow):
         self.ui.player1.update_player_stats(player1)
         self.ui.player2.update_player_stats(player2)
 
-    def on_simulation_finished(self):
+    def on_simulation_finished(self, chance_over_talent):
         self.app.stop()
         self.app = None
         self.ui.progressBar.setEnabled(False)
+        self.ui.startButton.setEnabled(True)
+        self.ui.reason.setText(
+            "Chance" if chance_over_talent else "Talent"
+        )
