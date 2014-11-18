@@ -3,6 +3,13 @@ from itertools import cycle, islice, takewhile
 from functools import partial
 
 
+def valid_moves_indices(game, player):
+    return [
+        i for i, m in enumerate(game)
+        if can_play(game, player, i)
+    ]
+
+
 def is_starving(player, game):
     """
     return True if player has no stone

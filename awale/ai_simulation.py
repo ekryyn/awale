@@ -1,7 +1,9 @@
 from itertools import cycle
 import subprocess
-from awale.core import GameState, can_play, winner
-from awale.gui.console import display_game
+from threading import Thread
+from awale.core import valid_moves_indices
+from core import GameState, can_play, winner
+from gui.console import display_game
 
 
 def block_until_line(stream):
@@ -11,9 +13,9 @@ def block_until_line(stream):
     return ln
 
 
-def create_process():
+def create_process(cmd):
     return subprocess.Popen(
-        ["python2", "run_ia.py"],
+        cmd.split(' '),
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         close_fds=True
@@ -29,6 +31,16 @@ class Player(object):
         self.pid = pid
         self.process = process
         self.victories = 0
+        self.defeats = 0
+        self.draws = 0
+        self.moves_played = 0
+        self.valid_moves_total = 0
+
+    @property
+    def valid_moves_mean(self):
+        if self.moves_played:
+            return float(self.valid_moves_total)/self.moves_played
+        return 0.0
 
     @property
     def stdout(self):
@@ -38,14 +50,24 @@ class Player(object):
     def stdin(self):
         return self.process.stdin
 
+    @property
+    def win_percent(self):
+        try:
+            return (
+                100.0 * self.victories/(
+                    self.victories + self.draws + self.defeats
+                )
+            )
+        except ZeroDivisionError:
+            return 0.0
+
 
 def send_state(stdin, game):
     game_ = ' '.join(str(a) for a in game.game)
     scores_ = ' '.join(str(s) for s in game.scores)
     to_play = str(game.current_player + 1)
     valid_moves = ' '.join(
-        str(i+1) for i, m in enumerate(game.game)
-        if can_play(game.game, game.current_player, i)
+        str(i+1) for i in valid_moves_indices(game.game, game.current_player)
     )
     lines = "%s\n%s\n%s\n%s\n" % (
         game_,
@@ -55,11 +77,13 @@ def send_state(stdin, game):
     )
     stdin.write(lines)
 
+    return valid_moves
+
 
 LETTERS = "ABCDEFfedcba"
 
 
-class App(object):
+class App(Thread):
     """
     Wrapper to easily kill subprocesses
     """
@@ -67,9 +91,22 @@ class App(object):
     running = False
     remaining_games = 0
 
+    def __init__(self, nb_games, cmd1, cmd2, listeners=None):
+        super(App, self).__init__()
+        self.remaining_games = nb_games
+        self.listeners = listeners or []
+        self.cmd1 = cmd1
+        self.cmd2 = cmd2
+
+    def notify_listeners(self, method_to_call, *args):
+        for l in self.listeners:
+            if hasattr(l, method_to_call):
+                getattr(l, method_to_call)(*args)
+
     def stop(self):
         self.running = False
         self.remaining_games = 0
+        self.notify_listeners('on_stop')
 
     def play_game(self, players):
 
@@ -96,9 +133,14 @@ class App(object):
                 self.stop()
             else:
                 # play it
+                # print(display_game(last_game, last_scores))
                 last_game = game.game[:]
                 last_scores = game.scores[:]
                 game.play(p.pid, LETTERS[move])
+                p.moves_played += 1
+                p.valid_moves_total += len(
+                    valid_moves_indices(game.game, game.current_player)
+                )
                 # print(display_game(game.game, game.scores))
 
             if game.over():
@@ -110,22 +152,33 @@ class App(object):
                         p for p in players
                         if p.pid == win_id
                     )
+                    p_loser = next(
+                        p for p in players
+                        if p.pid != win_id
+                    )
                     p_winner.victories += 1
+                    p_loser.defeats += 1
+                else:
+                    # draw
+                    for p in players:
+                        p.draws += 1
                 over = True
 
-    def run(self, number_of_games=1):
+    def run(self):
 
         self.running = True
-        self.remaining_games = number_of_games
 
         players = [
-            Player(0, create_process()),
-            Player(1, create_process())
+            Player(0, create_process(self.cmd1)),
+            Player(1, create_process(self.cmd2))
         ]
+
+        self.notify_listeners('on_simulation_started')
 
         while self.remaining_games > 0:
             self.play_game(players)
             self.remaining_games -= 1
+            self.notify_listeners('on_game_finished', *players)
 
         # scores
         for p in players:
@@ -140,10 +193,19 @@ class App(object):
         for p in players:
             p.process.terminate()
 
+        self.notify_listeners('on_simulation_finished')
+
 if __name__ == '__main__':
-    app = App()
+    app = App(
+        1000,
+        'python2 run_ia.py',
+        # 'python2 run_ia.py',
+        'awalecpp/benoit'
+    )
     try:
-        app.run(1000)
+        app.start()
+        app.join()
     except KeyboardInterrupt:
         app.running = False
         print("Shutting down...")
+        app.join()
