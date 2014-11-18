@@ -2,15 +2,23 @@
 #define RANDOM_STRATEGY_HPP
 
 
-#include "game.hpp"
+#include "../game.hpp"
 #include <random>
+
+namespace strategies{
+
 
 struct random_strategy{
 
 
-    typedef std::minstd_rand G;
+    typedef std::minstd_rand RnG;
 
-    G g;
+    random_strategy(const boost::program_options::variables_map& options) {}
+
+
+
+
+    RnG g;
 
 
     size_t choose_move(const game& game_state){
@@ -31,6 +39,6 @@ struct random_strategy{
 
 };
 
-
+} // ns strategies
 
 #endif // RANDOM_STRATEGY_HPP

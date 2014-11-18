@@ -25,8 +25,6 @@ std::vector<size_t> read_int_line(const std::string& line){
 
     return line_data;
 
-
-
 }
 
 
