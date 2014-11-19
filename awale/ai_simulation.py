@@ -1,7 +1,7 @@
 from itertools import cycle
 import subprocess
 from threading import Thread
-from awale.core import valid_moves_indices
+from awale.core import valid_moves_indices, count_stones
 from core import GameState, winner
 import time
 from gui.console import display_game
@@ -166,7 +166,7 @@ class App(Thread):
 
             if game.over():
                 # print("Finished, winner: %s" % winner(game.scores))
-                win_id = winner(game.scores)
+                win_id = winner(game.game, game.scores)
                 if win_id is not None:
                     # not draw
                     p_winner = next(

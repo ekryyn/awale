@@ -32,13 +32,22 @@ def other_player(current):
     return 0 if current else 1
 
 
-def winner(scores):
+def winner(game, scores):
+    # first add remaining stones to score
+    for player, _ in enumerate(scores):
+        scores[player] += count_stones(game, player)
+
+    # then compare
     if scores[0] == scores[1]:
         return None
     elif scores[0] > scores[1]:
         return 0
     else:
         return 1
+
+
+def count_stones(game, player):
+    return sum(a for i, a in enumerate(game) if player_id(game, i) == player)
 
 
 def player_id(game, index):
@@ -50,7 +59,7 @@ def player_id(game, index):
 def can_play(game, player, index):
     """ _player_ can play on _index_ """
     if player == player_id(game, index) and game[index]:
-        toto = any(
+        cant_starve = any(
             map(
                 lambda x: x >= 3,
                 (
@@ -59,7 +68,7 @@ def can_play(game, player, index):
                 )
             )
         )
-        if toto:
+        if cant_starve:
             return True
         after = step_game(game, index)[0]
         return not is_starving(other_player(player), after)
