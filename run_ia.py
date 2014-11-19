@@ -1,7 +1,6 @@
 import sys
-from awale.ai import random_ai
-from awale.ai import small_heap_ai
-
+from awale.ai import random_ai, minmax, small_heap_ai
+import argparse
 
 def block_until_line(stream):
     ln = ''
@@ -11,16 +10,19 @@ def block_until_line(stream):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", default='random')
+    parser.add_argument("--alpha", default=1, type=int)
 
     strategies = {
         'random': random_ai,
         'small': small_heap_ai,
+        'minmax': minmax,
     }
 
-    try:
-        strategy = strategies[sys.argv[1]]
-    except Exception:
-        strategy = random_ai
+    options = vars(parser.parse_args())
+
+    strategy = strategies[options['s']]
 
     running = True
     while running:
@@ -43,5 +45,5 @@ if __name__ == '__main__':
             sys.stderr.write(display_game(game, scores) + "\n")
             running = False
 
-        print strategy.next_move(game, scores, to_play, valid_moves)
+        print strategy.next_move(game, scores, to_play, valid_moves, **options)
         sys.stdout.flush()

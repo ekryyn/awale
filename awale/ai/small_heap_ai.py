@@ -1,7 +1,7 @@
 from awale.core import valid_moves_indices
 
 
-def next_move(game, score, player_id, mvs):
+def next_move(game, score, player_id, mvs, **options):
     valid_moves = valid_moves_indices(game, player_id)
     small = min(game[i] for i in valid_moves)
     move = next(
