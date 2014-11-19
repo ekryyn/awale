@@ -18,7 +18,7 @@ process_arguments(int argc, char** argv)
              "path to configuration file.")
             /// Typical command line arguments.
             ("strategy", po::value<std::string>()->default_value(std::string("random")),
-             "name of the strategy to use: currently only random_strategy.")
+             "name of the strategy to use: currently only random or first.")
 
             /// Typical config file arguments.
 
