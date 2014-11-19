@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-
+#include <algorithm>
 
 #include <sstream>
 #include <vector>
@@ -16,11 +16,12 @@ struct game{
 
 
     //explicit constructor
-    game(std::vector<size_t> tab,
-         size_t next_player,
-         std::vector<size_t>  scores,
-         std::vector<size_t> valid_moves):
+    game(std::vector<int> tab,
+         int next_player,
+         std::vector<int>  scores,
+         std::vector<int> valid_moves):
         tab(tab),
+        size_(tab.size()/2),
         next_player(next_player),
         scores(scores),
         valid_moves(valid_moves)
@@ -33,6 +34,8 @@ struct game{
         // tab
         std::getline(infile, line);
         tab = read_int_line(line);
+        //size
+        size_ =  tab.size()/2;
         // scores
         std::getline(infile, line);
         scores = read_int_line(line);
@@ -47,6 +50,7 @@ struct game{
     //copy constructor
     game(const game& game_in):
         tab(game_in.tab),
+        size_(game_in.size_),
         next_player(game_in.next_player),
         scores(game_in.scores),
         valid_moves(game_in.valid_moves)
@@ -78,10 +82,116 @@ struct game{
 
     }
 
-    std::vector<size_t> tab;
-    size_t next_player;
-    std::vector<size_t>  scores;
-    std::vector<size_t> valid_moves;
+
+    void play(int move){
+
+        if (move >= (int)valid_moves.size()) throw std::runtime_error("invalid move");
+
+
+        //distribute seeds into holes
+
+        int start_idx = valid_moves[move] + size_ * next_player;
+        auto n_seeds = tab[start_idx];
+
+        int n_laps = n_seeds /(2 * size_ -1);
+
+        if (n_laps >0) {
+            n_seeds -= n_laps * (2 * size_ -1);
+            std::transform(tab.begin(),
+                           tab.end(),
+                           tab.begin(),
+                           [n_laps](int n){return  n + n_laps;}
+                          );
+        }
+
+
+
+        tab[start_idx] = 0;
+        for (int i=1; i<=n_seeds; i++) {
+
+            tab[(start_idx + i) % (2*size_)]+=1;
+
+        }
+        //capture seeds
+
+        int last_hole_idx = start_idx + n_seeds;
+        if (last_hole_idx >= size_ && next_player == 0){
+
+            while(last_hole_idx>=size_){
+
+                if (tab[last_hole_idx]==2 || tab[last_hole_idx]==3) {
+                    scores[next_player] += tab[last_hole_idx];
+                    tab[last_hole_idx]= 0;
+                    last_hole_idx--;
+                } else {break;}
+            }
+
+        } else if (last_hole_idx < size_ && next_player == 1){
+
+            while(last_hole_idx>=0){
+
+                if (tab[last_hole_idx]==2 || tab[last_hole_idx]==3) {
+                    scores[next_player] += tab[last_hole_idx];
+                    tab[last_hole_idx]= 0;
+                    last_hole_idx--;
+                } else {
+                    break;
+                }
+            }
+
+
+        }
+    }
+
+//
+    std::vector<int> get_valid_moves(){
+
+        std::vector<int> non_empty_holes;
+
+        for (int i=0; i<size_; i++){
+
+            if (tab[i + size_ * next_player] >0) {
+                non_empty_holes.push_back(i);}
+        }
+
+        if ((*std::max_element(tab.begin() + size_ * (1 - next_player),
+                              tab.begin() + size_ * (1 - next_player) + size_)) > 2) {
+            return non_empty_holes;
+        } else {
+            //test every move to see if opponent got empty side
+            std::vector<int> new_valid_moves;
+            for (size_t i=0; i<non_empty_holes.size();i++){
+
+                auto game_tmp = *this;
+
+                game_tmp.play(non_empty_holes[i]);
+                if ((*std::max_element(game_tmp.tab.begin() + size_ * (1 - next_player),
+                                      game_tmp.tab.begin() + size_ * (1 - next_player) + size_)) >0) {
+
+                    new_valid_moves.push_back(non_empty_holes[i]);
+                }
+
+
+            }
+            return new_valid_moves;
+
+        }
+
+
+
+
+
+
+
+    }
+
+
+
+std::vector<int> tab;
+int size_;
+int next_player;
+std::vector<int>  scores;
+std::vector<int> valid_moves;
 
 };
 
