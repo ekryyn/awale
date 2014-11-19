@@ -6,11 +6,11 @@
 #include <vector>
 #include <iterator>
 
-#include "include/process_args.hpp"
-#include "include/utils.hpp"
-#include "include/game.hpp"
-#include "include/strategies/random_strategy.hpp"
-#include "include/strategies/first.hpp"
+#include "process_args.hpp"
+#include "utils.hpp"
+#include "game.hpp"
+#include "strategies/random_strategy.hpp"
+#include "strategies/first.hpp"
 
 template<typename Strategy>
 void run_bot(const boost::program_options::variables_map& options)
