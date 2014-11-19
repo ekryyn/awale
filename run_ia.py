@@ -1,5 +1,6 @@
 import sys
-from awale.ai import random_ai as ai
+from awale.ai import random_ai
+from awale.ai import small_heap_ai
 
 
 def block_until_line(stream):
@@ -10,6 +11,17 @@ def block_until_line(stream):
 
 
 if __name__ == '__main__':
+
+    strategies = {
+        'random': random_ai,
+        'small': small_heap_ai,
+    }
+
+    try:
+        strategy = strategies[sys.argv[1]]
+    except Exception:
+        strategy = random_ai
+
     running = True
     while running:
         # read 4 lines to get information
@@ -31,5 +43,5 @@ if __name__ == '__main__':
             sys.stderr.write(display_game(game, scores) + "\n")
             running = False
 
-        print ai.next_move(game, scores, to_play, valid_moves)
+        print strategy.next_move(game, scores, to_play, valid_moves)
         sys.stdout.flush()
