@@ -10,12 +10,12 @@
 #include <iterator>
 
 //put line into vector of ints
-std::vector<size_t> read_int_line(const std::string& line){
+std::vector<int> read_int_line(const std::string& line){
 
-    std::vector<size_t>   line_data;
+    std::vector<int>   line_data;
     std::stringstream  line_stream(line);
 
-    size_t value;
+    int value;
     // Read an integer at a time from the line
     while(line_stream >> value)
     {

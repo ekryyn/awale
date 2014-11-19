@@ -1,4 +1,4 @@
-set(TESTS )
+set(TESTS test_game)
 
 foreach(test ${TESTS})
     add_executable(${test} ${test}.cpp)
