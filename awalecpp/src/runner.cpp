@@ -13,14 +13,14 @@
 #include "strategies/first.hpp"
 
 template<typename Strategy>
-void run_bot(const boost::program_options::variables_map& options)
+void run_bot(const boost::program_options::variables_map& options, std::istream& infile = std::cin, std::ostream& outfile = std::cout)
 {
 
     Strategy strategy(options);
 
     while(true) {
 
-        game game_state(std::cin);
+        game game_state(infile);
 
         //pick best move
 
@@ -29,7 +29,7 @@ void run_bot(const boost::program_options::variables_map& options)
 
         //send best move
 
-        std::cout << game_state.valid_moves[best_move] << std::endl;
+        outfile << game_state.valid_moves[best_move] << std::endl;
 
     }
 
