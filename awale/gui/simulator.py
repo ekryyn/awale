@@ -47,11 +47,11 @@ class SimulatorWindow(QMainWindow):
         self.ui.player1.update_player_stats(player1)
         self.ui.player2.update_player_stats(player2)
 
-    def on_simulation_finished(self, chance_over_talent):
+    def on_simulation_finished(self, talent):
         self.app.stop()
         self.app = None
         self.ui.progressBar.setEnabled(False)
         self.ui.startButton.setEnabled(True)
         self.ui.reason.setText(
-            "Chance" if chance_over_talent else "Talent"
+            "Talent" if talent else "Chance"
         )

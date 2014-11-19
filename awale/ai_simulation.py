@@ -207,13 +207,13 @@ class App(Thread):
 
         import math
         p = float(players[0].victories)/(players[0].victories+players[1].victories)
-        chance = abs(p - 0.5) > 2 * math.sqrt((p*(1-p))/(players[0].victories+players[1].victories))
+        talent = abs(p - 0.5) > 2 * math.sqrt((p*(1-p))/(players[0].victories+players[1].victories))
 
         # kill sub processes
         for p in players:
             p.process.terminate()
 
-        self.notify_listeners('on_simulation_finished', chance)
+        self.notify_listeners('on_simulation_finished', talent)
 
 if __name__ == '__main__':
     app = App(

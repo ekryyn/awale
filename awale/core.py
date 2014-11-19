@@ -121,6 +121,16 @@ def eat_stones(game, last, player, scores):
     return game, scores
 
 
+def next_state(game, scores, player, index_to_play):
+    """
+    play the move, eat the stones, and return the state
+    """
+    game, last_hole = step_game(game, index_to_play)
+    game, scores = eat_stones(game, last_hole, player, scores)
+
+    return game, scores, other_player(player)
+
+
 class AwaleException(Exception): pass
 
 
@@ -133,8 +143,6 @@ class GameState(object):
     scores = [0, 0]
     letters = dict((l, i) for i, l in enumerate(list("ABCDEFfedcba")))
 
-    def switch_current_player(self):
-        self.current_player = other_player(self.current_player)
 
     def over(self):
         return game_over(self.game, self.scores, self.current_player)
@@ -152,9 +160,7 @@ class GameState(object):
             raise WrongMove("You can't play this !")
 
         # play
-        self.game, last = step_game(self.game, index)
-        # eat
-        self.game, self.scores = eat_stones(self.game, last, player, self.scores)
-        # switch turn
-        self.switch_current_player()
+        self.game, self.scores, self.current_player = next_state(
+            self.game, self.scores, self.current_player, index
+        )
 
