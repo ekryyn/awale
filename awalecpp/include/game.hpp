@@ -30,7 +30,7 @@ struct game{
     //from file reading
     game(std::istream& infile){
 
-        std::string   line;
+        std::string line;
         // tab
         std::getline(infile, line);
         tab = read_int_line(line);
@@ -82,68 +82,6 @@ struct game{
 
     }
 
-
-    void play(int move){
-
-        if (move >= (int)valid_moves.size()) throw std::runtime_error("invalid move");
-
-
-        //distribute seeds into holes
-
-        int start_idx = valid_moves[move] + size_ * next_player;
-        auto n_seeds = tab[start_idx];
-
-        int n_laps = n_seeds /(2 * size_ -1);
-
-        if (n_laps >0) {
-            n_seeds -= n_laps * (2 * size_ -1);
-            std::transform(tab.begin(),
-                           tab.end(),
-                           tab.begin(),
-                           [n_laps](int n){return  n + n_laps;}
-                          );
-        }
-
-
-
-        tab[start_idx] = 0;
-        for (int i=1; i<=n_seeds; i++) {
-
-            tab[(start_idx + i) % (2*size_)]+=1;
-
-        }
-        //capture seeds
-
-        int last_hole_idx = start_idx + n_seeds;
-        if (last_hole_idx >= size_ && next_player == 0){
-
-            while(last_hole_idx>=size_){
-
-                if (tab[last_hole_idx]==2 || tab[last_hole_idx]==3) {
-                    scores[next_player] += tab[last_hole_idx];
-                    tab[last_hole_idx]= 0;
-                    last_hole_idx--;
-                } else {break;}
-            }
-
-        } else if (last_hole_idx < size_ && next_player == 1){
-
-            while(last_hole_idx>=0){
-
-                if (tab[last_hole_idx]==2 || tab[last_hole_idx]==3) {
-                    scores[next_player] += tab[last_hole_idx];
-                    tab[last_hole_idx]= 0;
-                    last_hole_idx--;
-                } else {
-                    break;
-                }
-            }
-
-
-        }
-    }
-
-//
     std::vector<int> get_valid_moves(){
 
         std::vector<int> non_empty_holes;
@@ -151,11 +89,13 @@ struct game{
         for (int i=0; i<size_; i++){
 
             if (tab[i + size_ * next_player] >0) {
-                non_empty_holes.push_back(i);}
+                non_empty_holes.push_back(i);
+            }
         }
 
+        //quick sufficient condition
         if ((*std::max_element(tab.begin() + size_ * (1 - next_player),
-                              tab.begin() + size_ * (1 - next_player) + size_)) > 2) {
+                              tab.begin() + size_ * (2 - next_player) )) > 2) {
             return non_empty_holes;
         } else {
             //test every move to see if opponent got empty side
@@ -177,13 +117,88 @@ struct game{
 
         }
 
+    }
+
+    void play(int move){
+
+        if (move >= (int)valid_moves.size()) throw std::runtime_error("invalid move");
 
 
+        //distribute seeds into holes
+
+        int start_idx = valid_moves[move] + size_ * next_player;
+        auto n_seeds = tab[start_idx];
+
+        int n_laps = n_seeds /(2 * size_ -1);
+
+        //distribute laps seeds
+        if (n_laps >0) {
+            n_seeds -= n_laps * (2 * size_ -1);
+            std::transform(tab.begin(),
+                           tab.end(),
+                           tab.begin(),
+                           [n_laps](int n){return  n + n_laps;}
+                          );
+        }
+
+
+
+        //distribute remaining seeds
+        tab[start_idx] = 0;
+        for (int i=1; i<=n_seeds; i++) {
+
+            tab[(start_idx + i) % (2*size_)]+=1;
+
+        }
+
+        //capture seeds
+        int last_hole_idx = start_idx + n_seeds;
+        if (last_hole_idx >= size_ && next_player == 0){
+
+            while(last_hole_idx>=size_){
+
+                if (tab[last_hole_idx]==2 || tab[last_hole_idx]==3) {
+                    scores[next_player] += tab[last_hole_idx];
+                    tab[last_hole_idx]= 0;
+                    last_hole_idx--;
+                } else {
+                    break;
+                }
+            }
+
+        } else if (last_hole_idx < size_ && next_player == 1){
+
+            while(last_hole_idx>=0){
+
+                if (tab[last_hole_idx]==2 || tab[last_hole_idx]==3) {
+                    scores[next_player] += tab[last_hole_idx];
+                    tab[last_hole_idx]= 0;
+                    last_hole_idx--;
+                } else {
+                    break;
+                }
+            }
+
+
+        }
+
+
+    }
+
+    void update_after_play(){
+
+    //update next_player
+    next_player = 1 - next_player;
+    //compute next valid moves
+    valid_moves = get_valid_moves();
 
 
 
 
     }
+
+//
+
 
 
 
