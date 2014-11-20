@@ -1,4 +1,4 @@
-set(TESTS test_game)
+set(TESTS test_game test_minmax)
 
 foreach(test ${TESTS})
     add_executable(${test} ${test}.cpp)

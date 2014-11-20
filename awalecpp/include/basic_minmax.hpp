@@ -1,10 +1,13 @@
 #ifndef BASIC_MINMAX_HPP
 #define BASIC_MINMAX_HPP
 
-#include "player.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <cstdlib>
+#include "game.hpp"
+
+/*
 
 namespace checkers
 {
@@ -95,15 +98,20 @@ GameState Player::play(const GameState &pState, const Deadline &pDue)
     return bestMove;
 }
 
-/*namespace checkers*/ }
+}
+
+*/
+
+
+
 
 //basic minmax templated on game class and heuristic function type F
 template<typename Game, typename F>
 struct basic_minmax{
 
 
-    basic_minmax(const Game& game_state, const F& f, size_t depth_search):
-        game_state(game_state),f(f),depth_search(depth_search){}
+    basic_minmax(const Game& game_state, F f, size_t search_depth):
+        game_state(game_state),f(f),search_depth(search_depth){}
 
 
 
@@ -115,13 +123,14 @@ struct basic_minmax{
         for (int i = 0; i < game_state.valid_moves.size(); i++){
 
 
-            auto game_tmp = tmp_game_state;
+            auto game_tmp = game_state;
 
             //compute minmax for this move
 
-            game_tmp.play(valid_moves[i]);
+            game_tmp.play(i);
+            game_tmp.update_after_play();
 
-            move_values[i] = compute_minmax(game_tmp, depth, game_state.next_player);
+            move_values[i] = compute_minmax(game_tmp, search_depth - 1, game_state.next_player);
 
 
         }
@@ -136,24 +145,25 @@ struct basic_minmax{
     }
 
 
-    double compute_minmax(const Game& tmp_game_state, const int& depth, int player_id){
+    double compute_minmax(const Game& tmp_game_state, const int& search_depth_in, int player_id){
 
-        if (depth == 0 || tmp_game_state.game_over) {return f(game_state, player);}
+        if (search_depth_in == 0 || tmp_game_state.game_over) {return f(tmp_game_state, player_id);}
 
         int sign = (player_id == tmp_game_state.next_player)?1:-1;
 
 
-        double max_value = -Inf;
+        double max_value = -10000000;
 
 
-        for (const auto& move : tmp_game_state.valid_moves){
+        for (int i = 0; i < tmp_game_state.valid_moves.size(); i++){
 
             //play this move
             auto game_tmp = tmp_game_state;
             //compute minmax after the move
 
-            game_tmp.play(move);
-            auto value = sign * compute_minmax(game_tmp, depth - 1 , 1 - player);
+            game_tmp.play(i);
+            game_tmp.update_after_play();
+            auto value = sign * compute_minmax(game_tmp, search_depth_in - 1 , player_id);
             //keep the best move
             if (value > max_value) {
                 max_value = value ;
@@ -162,25 +172,15 @@ struct basic_minmax{
         }
 
 
+        return max_value;
     }
 
     Game game_state;
-    F f;
-    size_t depth_search;
+    F* f;
+    size_t search_depth;
 
 
 
-}
-
-
-
-
-
-
-
-
-
-
-
+};
 
 #endif // BASIC_MINMAX_HPP
