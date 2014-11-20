@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS  "-Wall -pedantic -Wfatal-errors -std=c++11")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 find_package(Boost 1.50 COMPONENTS test_exec_monitor program_options REQUIRED)
-find_package(Doxygen)
+#find_package(Doxygen)
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
 			    "${PROJECT_BINARY_DIR}/include"
 				"${PROJECT_BINARY_DIR}/deps/Celero/src/Celero/include")

@@ -19,13 +19,15 @@ struct game{
     game(std::vector<int> tab,
          int next_player,
          std::vector<int>  scores,
-         std::vector<int> valid_moves):
+         std::vector<int> valid_moves,
+         bool game_over):
         tab(tab),
         size_(tab.size()/2),
         next_player(next_player),
         scores(scores),
-        valid_moves(valid_moves)
-    {}
+        valid_moves(valid_moves),
+        game_over(game_over)
+        {}
 
     //from file reading
     game(std::istream& infile){
@@ -45,6 +47,9 @@ struct game{
         // valid_moves
         std::getline(infile, line);
         valid_moves = read_int_line(line);
+
+        //game_over
+        game_over = is_game_over(); 
     }
 
     //copy constructor
@@ -185,13 +190,23 @@ struct game{
 
     }
 
+    bool is_game_over(){
+
+    
+    return ((scores[0] > max_score) || 
+        (scores[1] > max_score) || 
+        ((scores[0] == max_score) &&(scores[1] == max_score))
+           );
+
+    }
     void update_after_play(){
 
     //update next_player
     next_player = 1 - next_player;
     //compute next valid moves
     valid_moves = get_valid_moves();
-
+    //game_over?
+    game_over = is_game_over();
 
 
 
@@ -202,11 +217,14 @@ struct game{
 
 
 
-std::vector<int> tab;
-int size_;
-int next_player;
-std::vector<int>  scores;
-std::vector<int> valid_moves;
+    std::vector<int> tab;
+    int size_;
+    int next_player;
+    std::vector<int>  scores;
+    std::vector<int> valid_moves;
+    bool game_over;
+    int max_score;
+i
 
 };
 
