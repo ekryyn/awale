@@ -1,7 +1,7 @@
 from itertools import cycle
 import subprocess
 from threading import Thread
-from awale.core import valid_moves_indices, count_stones
+from awale.core import next_valid_states
 from core import GameState, winner
 import time
 from gui.console import display_game
@@ -84,9 +84,13 @@ def send_state(stdin, game):
     game_ = ' '.join(str(a) for a in game.game)
     scores_ = ' '.join(str(s) for s in game.scores)
     to_play = str(game.current_player + 1)
-    valid_moves = ' '.join(
-        str(i+1) for i in valid_moves_indices(game.game, game.current_player)
-    )
+    vms = [
+        str(i+1)
+        for i, s in next_valid_states(game.game,
+                                      game.scores,
+                                      game.current_player)
+    ]
+    valid_moves = ' '.join(vms)
     lines = "%s\n%s\n%s\n%s\n" % (
         game_,
         scores_,
@@ -95,7 +99,7 @@ def send_state(stdin, game):
     )
     stdin.write(lines)
 
-    return valid_moves
+    return len(vms)
 
 
 LETTERS = "ABCDEFfedcba"
@@ -137,7 +141,7 @@ class App(Thread):
             p = p_cycle.next()  # next player
 
             tm_before = time.time()
-            send_state(p.stdin, game)
+            vms = send_state(p.stdin, game)
             # wait for p's move
             ln = block_until_line(p.stdout)
             tm_after = time.time()
@@ -159,9 +163,7 @@ class App(Thread):
                 last_scores = game.scores[:]
                 game.play(p.pid, LETTERS[move])
                 p.moves_played += 1
-                p.valid_moves_total += len(
-                    valid_moves_indices(game.game, game.current_player)
-                )
+                p.valid_moves_total += vms
                 # print(display_game(game.game, game.scores))
 
             if game.over():

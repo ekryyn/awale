@@ -3,10 +3,15 @@ from itertools import cycle, islice, takewhile
 from functools import partial
 
 
-def valid_moves_indices(game, player):
+def next_valid_states(game, scores, player):
+    can_play_ = partial(can_play, game, scores, player)
+    indexed_can_play = (
+        (index, can_play_(index)) for index, amount in enumerate(game)
+    )
     return [
-        i for i, m in enumerate(game)
-        if can_play(game, player, i)
+        (i, next_state)
+        for i, (playable, next_state) in indexed_can_play
+        if playable
     ]
 
 
@@ -22,10 +27,12 @@ def is_starving(player, game):
     return stones == 0
 
 
-def game_over(game, scores, current_player):
+def game_over(game, scores, current_player, valid_states_cache=None):
+    vs = valid_states_cache or next_valid_states(game, scores, current_player)
+    can_move = bool(len(vs))
     return any(s >= 25 for s in scores) \
-        or sum(game) <= 6 \
-        or len(list(m for (i, m) in enumerate(game) if can_play(game, current_player, i))) == 0
+        or not can_move \
+        or sum(game) <= 6
 
 
 def other_player(current):
@@ -56,24 +63,14 @@ def player_id(game, index):
     return 0 if index < l else 1
 
 
-def can_play(game, player, index):
+def can_play(game, scores, player, index):
     """ _player_ can play on _index_ """
+    after = None, None, None
     if player == player_id(game, index) and game[index]:
-        cant_starve = any(
-            map(
-                lambda x: x >= 3,
-                (
-                    x for (i, x) in enumerate(game)
-                    if player_id(game, i) == player
-                )
-            )
-        )
-        if cant_starve:
-            return True
-        after = step_game(game, index)[0]
-        return not is_starving(other_player(player), after)
+        after = next_state(game, scores, player, index)
+        return not is_starving(other_player(player), after[0]), after
 
-    return False
+    return False, after
 
 
 def can_eat(game, player, index):
@@ -143,7 +140,6 @@ class GameState(object):
     scores = [0, 0]
     letters = dict((l, i) for i, l in enumerate(list("ABCDEFfedcba")))
 
-
     def over(self):
         return game_over(self.game, self.scores, self.current_player)
 
@@ -156,7 +152,7 @@ class GameState(object):
         except KeyError:
             raise WrongMove("%s is not a valid move." % letter)
 
-        if not can_play(self.game, player, index):
+        if not can_play(self.game, self.scores, player, index)[0]:
             raise WrongMove("You can't play this !")
 
         # play

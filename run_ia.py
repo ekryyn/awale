@@ -11,8 +11,9 @@ def block_until_line(stream):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", default='random')
-    parser.add_argument("--alpha", default=1, type=int)
+    parser.add_argument("--strategy", "-s", default='random')
+    parser.add_argument("--alpha", "-a", default=0.5, type=float)
+    parser.add_argument("--depth", "-d", default=4, type=int)
 
     strategies = {
         'random': random_ai,
@@ -22,7 +23,7 @@ if __name__ == '__main__':
 
     options = vars(parser.parse_args())
 
-    strategy = strategies[options['s']]
+    strategy = strategies[options['strategy']]
 
     running = True
     while running:
