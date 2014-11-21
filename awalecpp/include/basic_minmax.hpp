@@ -172,7 +172,7 @@ struct basic_minmax{
         }
 
 
-        return sign * max_value;
+        return max_value;
     }
 
     Game game_state;
