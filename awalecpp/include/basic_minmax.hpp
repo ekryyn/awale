@@ -147,9 +147,9 @@ struct basic_minmax{
 
     double compute_minmax(const Game& tmp_game_state, const int& search_depth_in, int player_id){
 
-        if (search_depth_in == 0 || tmp_game_state.game_over) {return f(tmp_game_state, player_id);}
-
+        
         int sign = (player_id == tmp_game_state.next_player)?1:-1;
+        if (search_depth_in == 0 || tmp_game_state.game_over) {return sign * f(tmp_game_state);}
 
 
         double max_value = -10000000;
@@ -172,7 +172,7 @@ struct basic_minmax{
         }
 
 
-        return max_value;
+        return sign * max_value;
     }
 
     Game game_state;
