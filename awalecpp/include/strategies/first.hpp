@@ -15,7 +15,7 @@ struct first{
     size_t choose_move(const game& game_state){
 
 
-        return 0;
+        return game_state.size_ * game_state.next_player;
 
     }
 

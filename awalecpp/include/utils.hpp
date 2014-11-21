@@ -27,6 +27,21 @@ std::vector<int> read_int_line(const std::string& line){
 
 }
 
+//put vector of ints into line
+std::ostream& write_int_line(std::ostream& line_stream, const std::vector<int>& vec){
+
+    
+    for (auto value : vec){
+		
+			line_stream << value;
+        }
+   
+    line_stream << std::endl;
+
+    return line_stream;
+
+}
+
 
 
 
