@@ -186,6 +186,7 @@ class App(Thread):
                     for p in players:
                         p.draws += 1
                 over = True
+        return game
 
     def run(self):
 
@@ -199,9 +200,11 @@ class App(Thread):
         self.notify_listeners('on_simulation_started')
 
         while self.remaining_games > 0:
-            self.play_game(players)
+            game = self.play_game(players)
             self.remaining_games -= 1
             self.notify_listeners('on_game_finished', *players)
+        print display_game(game.game, game.scores)
+        print "(Player %d to play.)" % game.current_player
 
         # scores
         for p in players:

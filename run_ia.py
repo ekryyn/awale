@@ -2,6 +2,7 @@ import sys
 from awale.ai import random_ai, minmax, small_heap_ai
 import argparse
 
+
 def block_until_line(stream):
     ln = ''
     while not ln:
@@ -46,5 +47,5 @@ if __name__ == '__main__':
             sys.stderr.write(display_game(game, scores) + "\n")
             running = False
 
-        print strategy.next_move(game, scores, to_play, valid_moves, **options)
+        print(strategy.next_move(game, scores, to_play, valid_moves, **options))
         sys.stdout.flush()

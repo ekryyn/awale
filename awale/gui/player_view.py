@@ -10,7 +10,7 @@ class PlayerView(QWidget):
         super(PlayerView, self).__init__(parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
-        self.ui.player_cmd.setText("python2 run_ia.py")
+        self.ui.player_cmd.setText("python run_ia.py -s minmax")
 
         self.ui.browse_btn.clicked.connect(self.update_cmd_path)
 

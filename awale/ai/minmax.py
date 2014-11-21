@@ -1,5 +1,8 @@
+from functools import partial
 from itertools import groupby
-from awale.core import count_stones, game_over, next_valid_states, player_id
+from awale.core import count_stones, game_over, next_valid_states, player_id, \
+    other_player
+import concurrent.futures
 
 
 def empty_chain_length(game, player):
@@ -16,27 +19,36 @@ def empty_chain_length(game, player):
 
 
 def evaluate_player_score(game, scores, player,
-                          is_over, valid_states, alpha=0):
+                          is_over, valid_states, alpha):
     if is_over:
         alpha = 1  # force to count stones ingame
-    return scores[player]\
-        - (alpha * empty_chain_length(game, player))  # malus for
-        # + (alpha * count_stones(game, player))\
-        # + (alpha * len(valid_states))\
+    return scores[player] \
+        - (alpha * empty_chain_length(game, player)) \
+        + (alpha * count_stones(game, player))\
+        + (alpha * len(valid_states))
 
 
-def min_max(game, scores, player, depth, current_player, alpha):
+def player_evaluation(game, scores, current_player,
+                      is_over, valid_states, alpha):
+    f = partial(evaluate_player_score,
+                game=game, scores=scores, is_over=is_over,
+                valid_states=valid_states, alpha=alpha)
+
+    return f(player=current_player) - f(player=other_player(current_player))
+
+
+def min_max(current_player, depth, alpha, state):
+    game, scores, player = state
     vs = next_valid_states(game, scores, player)
     is_over = game_over(game, scores, player, vs)
     if depth <= 0 or is_over:
-        return -1, evaluate_player_score(game, scores, player,
-                                         is_over, vs, alpha)
+        return -1, player_evaluation(game, scores, current_player,
+                                     is_over, vs, alpha)
     else:
         min_or_max = max if player == current_player else min
-
-        return min_or_max(
+        res = min_or_max(
             (
-                (i, min_max(*state,
+                (i, min_max(state=state,
                             depth=depth-1,
                             current_player=current_player,
                             alpha=alpha)[1])
@@ -44,7 +56,27 @@ def min_max(game, scores, player, depth, current_player, alpha):
             ),
             key=lambda x: x[1]
         )
+        return res
+
+
+def min_max_h(player_id, depth, alpha, i, state):
+    return i, min_max(player_id, depth, alpha, state)[1]
 
 
 def next_move(game, scores, player_id, mvs, alpha, depth, **options):
-    return min_max(game, scores, player_id, depth, player_id, alpha)[0] + 1
+
+    if depth <= 1:
+        return min_max(player_id, depth, alpha, (game, scores, player_id))[0] + 1
+    else:
+        min_max_p = partial(min_max_h, player_id, depth-1, alpha)
+        vs = next_valid_states(game, scores, player_id)
+        vs_args = zip(*vs)
+
+        with concurrent.futures.ProcessPoolExecutor(len(vs)) as executor:
+            res = executor.map(
+                min_max_p,
+                *vs_args
+            )
+            return max(res, key=lambda x: x[1])[0] + 1
+
+
