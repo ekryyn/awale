@@ -39,6 +39,7 @@ if __name__ == '__main__':
         scores = [int(a) for a in scores.split(' ')]
         to_play = int(to_play) - 1
 
+        # print(game, scores, to_play, valid_moves, file=sys.stderr)
         try:
             valid_moves = [int(a) for a in valid_moves.split(' ')]
         except ValueError:

@@ -1,16 +1,18 @@
 from itertools import cycle
+import logging
 import subprocess
+import time
 from threading import Thread
 from awale.core import next_valid_states
-from core import GameState, winner
-import time
-from gui.console import display_game
+from awale.core import GameState, winner
+from awale.gui.console import display_game
 
 
 def block_until_line(stream):
     ln = ''
     while not ln:
         ln = stream.readline()
+    logging.getLogger(__name__).debug("ln: %s" % ln.strip())
     return ln
 
 
@@ -19,7 +21,9 @@ def create_process(cmd):
         cmd.split(' '),
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        close_fds=True
+        close_fds=True,
+        universal_newlines=True,
+        bufsize=0,
     )
 
 
@@ -138,12 +142,13 @@ class App(Thread):
         over = False
 
         while self.running and not over:
-            p = p_cycle.next()  # next player
-
+            p = next(p_cycle)  # next player
             tm_before = time.time()
             vms = send_state(p.stdin, game)
             # wait for p's move
+            logging.getLogger(__name__).debug("Waiting for player's move")
             ln = block_until_line(p.stdout)
+            logging.getLogger(__name__).debug("Received %s" % ln.strip())
             tm_after = time.time()
             p.total_time += tm_after - tm_before
 
@@ -203,8 +208,8 @@ class App(Thread):
             game = self.play_game(players)
             self.remaining_games -= 1
             self.notify_listeners('on_game_finished', *players)
-        print display_game(game.game, game.scores)
-        print "(Player %d to play.)" % game.current_player
+        print(display_game(game.game, game.scores))
+        print("(Player %d to play.)" % game.current_player)
 
         # scores
         for p in players:
@@ -227,6 +232,7 @@ if __name__ == '__main__':
         # 'python2 run_ia.py',
         'awalecpp/benoit'
     )
+
     try:
         app.start()
         app.join()
