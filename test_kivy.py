@@ -1,3 +1,4 @@
+import threading
 from kivy.app import App
 from kivy.event import EventDispatcher
 from kivy.properties import NumericProperty, BooleanProperty, AliasProperty, \
@@ -5,6 +6,7 @@ from kivy.properties import NumericProperty, BooleanProperty, AliasProperty, \
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
+import subprocess
 from awale import core
 from awale.gui.console import display_game
 
@@ -119,24 +121,36 @@ class Board(Widget):
             self.hovered_hole = None
 
     def on_touch_down(self, touch):
+        """
+        Triggered when clicked
+        """
         if self.hovered_hole:
             if self.hole_can_be_played(self.hovered_hole):
-                self.game_state.play_index(self.hovered_hole.index)
-
-                print(
-                    display_game(self.game_state.game, self.game_state.scores)
-                )
+                self.play_move(self.hovered_hole)
 
     def on_hovered_hole(self, instance, hole):
         self.highlight_next(hole)
         if hole is not None and self.hole_can_be_played(hole):
+            # I choose not to take the full next state,
+            # but just before eating instead
+            game, last = core.step_game(self.game_state.game, hole.index)
             ns = core.next_state(self.game_state.game,
                                  self.game_state.scores,
                                  self.game_state.current_player,
                                  hole.index)
-            self.game_to_display.state = ns
+            self.game_to_display.state = (
+                game,
+                self.game_state.scores,
+                core.other_player(self.game_state.current_player)
+            )
         else:
             self.game_to_display.state = self.game_state.state
+
+    def play_move(self, hole):
+        self.game_state.play_index(hole.index)
+        print(
+            display_game(self.game_state.game, self.game_state.scores)
+        )
 
     def draw_board(self, *args):
         self.clear_widgets()
@@ -167,14 +181,26 @@ class MainWindow(BoxLayout):
     pass
 
 
+class AIRunner(threading.Thread):
+    def __init__(self, listener):
+        super(AIRunner, self).__init__()
+
+    def run(self):
+        cmd = "python run_ia.py"
+        process = subprocess.Popen(
+            cmd.split(' '),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            close_fds=True,
+            universal_newlines=True,
+            bufsize=0,
+        )
+
+
 class AwaleApp(App):
     def build(self):
         w = MainWindow()
         return w
-
-
-    def toto(self):
-        print('clicked')
 
 if __name__ == "__main__":
     AwaleApp().run()
