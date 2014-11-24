@@ -1,0 +1,62 @@
+<MainWindow>:
+    orientation: 'vertical'
+
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Welcome !'
+
+    Board:
+        id: board
+        size_hint: 1, 2
+
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint: 1, .5
+
+        Label:
+            text: "Player 1 score : %d" % board.scores[0]
+
+        Label:
+            text: "Player 2 score : %d" % board.scores[1]
+
+    Button:
+        size_hint: 1, .5
+        text: 'start'
+        on_press: board.draw_board()
+
+
+
+<PlayerLine>:
+    orientation: 'horizontal'
+
+    Label:
+        text: 'T1'
+    Label:
+        text: 'T2'
+
+<Board>
+    canvas:
+        Color:
+            rgb: .2, 0, .2
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<Hole>:
+    size: self.SIZE, self.SIZE
+    canvas.before:
+        Color:
+            rgb: .5, .5, .5
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgb: self.color
+        Ellipse:
+            size: self.width*0.8, self.height*0.8
+            pos: self.x + self.width*0.1, self.y + self.height*0.1
+
+    Label:
+        text: "%d" % root.display_amount
+        pos: root.center_x - self.width/2, root.center_y - self.height/2

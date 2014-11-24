@@ -143,6 +143,18 @@ class GameState(object):
     def over(self):
         return game_over(self.game, self.scores, self.current_player)
 
+    def current_player_can_play(self, index):
+        return can_play(self.game, self.scores, self.current_player, index)[0]
+
+    def play_index(self, index):
+        if not self.current_player_can_play(index):
+            raise WrongMove("You can't play this !")
+
+        # play
+        self.game, self.scores, self.current_player = next_state(
+            self.game, self.scores, self.current_player, index
+        )
+
     def play(self, player, letter):
         if player != self.current_player:
             raise AwaleException("This is not your turn !")
@@ -152,11 +164,5 @@ class GameState(object):
         except KeyError:
             raise WrongMove("%s is not a valid move." % letter)
 
-        if not can_play(self.game, self.scores, player, index)[0]:
-            raise WrongMove("You can't play this !")
-
-        # play
-        self.game, self.scores, self.current_player = next_state(
-            self.game, self.scores, self.current_player, index
-        )
+        self.play_index(player, index)
 
