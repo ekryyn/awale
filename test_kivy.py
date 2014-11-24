@@ -1,10 +1,11 @@
 from kivy.app import App
+from kivy.event import EventDispatcher
 from kivy.properties import NumericProperty, BooleanProperty, AliasProperty, \
-    ListProperty, ObjectProperty
+    ListProperty, ObjectProperty, ReferenceListProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
-from awale.core import player_id, can_play, rotate, GameState
+from awale import core
 from awale.gui.console import display_game
 
 
@@ -12,9 +13,35 @@ class PlayerLine(BoxLayout):
     pass
 
 
+class GameState(EventDispatcher):
+    game = ListProperty([4]*12)
+    scores = ListProperty([0, 0])
+    current_player = NumericProperty(0)
+
+    state = ReferenceListProperty(game, scores, current_player)
+
+    def over(self):
+        return core.game_over(self.game, self.scores, self.current_player)
+
+    def current_player_can_play(self, index):
+        return core.can_play(self.game,
+                             self.scores,
+                             self.current_player,
+                             index)[0]
+
+    def play_index(self, index):
+        if not self.current_player_can_play(index):
+            raise core.WrongMove("You can't play this !")
+
+        # play
+        self.game, self.scores, self.current_player = core.next_state(
+            self.game, self.scores, self.current_player, index
+        )
+
+
 class Hole(Widget):
     SIZE = 80
-    amount = NumericProperty(8)
+    amount = NumericProperty(None)
     hovered = BooleanProperty(False)
     highlighted = BooleanProperty(False)
 
@@ -36,26 +63,11 @@ class Hole(Widget):
     def set_color(self, value):
         pass
 
-    def get_display_amount(self):
-        if self.highlighted:
-            return self.amount + 1
-        elif self.hovered and self.parent.hole_can_be_played(self):
-            return 0
-        return self.amount
-
-    def set_display_amount(self, value):
-        pass
-
     color = AliasProperty(get_color, set_color, bind=('hovered', 'highlighted',))
-    display_amount = AliasProperty(
-        get_display_amount,
-        set_display_amount,
-        bind=('hovered', 'highlighted', 'amount')
-    )
 
 
 def get_hole_offset(game, index):
-    pid = player_id(game, index)
+    pid = core.player_id(game, index)
     x = Hole.SIZE*index
     y = -Hole.SIZE + pid*Hole.SIZE
 
@@ -72,16 +84,17 @@ def get_hole_offset(game, index):
 class Board(Widget):
     hovered_hole = ObjectProperty(None, allownone=True)
     game_state = ObjectProperty(None)
-    scores = ListProperty(None)
+    game_to_display = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(Board, self).__init__(**kwargs)
-        self.game_state = GameState()
         self.bind(size=self.draw_board)
         Window.bind(mouse_pos=self.on_mouse_pos)
-        self.register_event_type('on_game_state_changed')
-
-        self.scores = self.game_state.scores
+        self.game_state = GameState()
+        self.game_to_display = GameState()
+        self.game_to_display.bind(game=self.draw_board)
+        self.game_to_display.bind(scores=self.draw_board)
+        self.game_to_display.bind(current_player=self.draw_board)
 
     def hole_can_be_played(self, hole):
         return self.game_state.current_player_can_play(hole.index)
@@ -109,30 +122,36 @@ class Board(Widget):
         if self.hovered_hole:
             if self.hole_can_be_played(self.hovered_hole):
                 self.game_state.play_index(self.hovered_hole.index)
-                self.dispatch('on_game_state_changed')
+
                 print(
                     display_game(self.game_state.game, self.game_state.scores)
                 )
 
     def on_hovered_hole(self, instance, hole):
         self.highlight_next(hole)
+        if hole is not None and self.hole_can_be_played(hole):
+            ns = core.next_state(self.game_state.game,
+                                 self.game_state.scores,
+                                 self.game_state.current_player,
+                                 hole.index)
+            self.game_to_display.state = ns
+        else:
+            self.game_to_display.state = self.game_state.state
 
     def draw_board(self, *args):
         self.clear_widgets()
-        for i, a in enumerate(self.game_state.game):
+        for i, a in enumerate(self.game_to_display.game):
             off_x, off_y = get_hole_offset(self.game_state.game, i)
             x = self.center_x + off_x
             y = self.center_y + off_y
             h = Hole(i, amount=a, pos=(x, y))
             self.add_widget(h.__self__)
 
-        print("Ch: %d" % len(self.children))
-
     def highlight_next(self, hole):
         if hole:
             a = self.game_state.game[hole.index]
             indexes = list(range(len(self.game_state.game)))
-            indexes = rotate(indexes, -hole.index)[1:a+1]
+            indexes = core.rotate(indexes, -hole.index)[1:a+1]
             valid_hole = self.hole_can_be_played(hole)
 
             if valid_hole:
@@ -142,10 +161,6 @@ class Board(Widget):
 
         for h in self.children:
             h.highlighted = False
-
-    def on_game_state_changed(self):
-        self.draw_board()
-        self.scores = self.game_state.scores
 
 
 class MainWindow(BoxLayout):

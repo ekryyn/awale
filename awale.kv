@@ -15,10 +15,10 @@
         size_hint: 1, .5
 
         Label:
-            text: "Player 1 score : %d" % board.scores[0]
+            text: "Player 1 score : %d" % board.game_state.scores[0]
 
         Label:
-            text: "Player 2 score : %d" % board.scores[1]
+            text: "Player 2 score : %d" % board.game_state.scores[1]
 
     Button:
         size_hint: 1, .5
@@ -58,5 +58,5 @@
             pos: self.x + self.width*0.1, self.y + self.height*0.1
 
     Label:
-        text: "%d" % root.display_amount
+        text: "%d" % root.amount
         pos: root.center_x - self.width/2, root.center_y - self.height/2
