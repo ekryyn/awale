@@ -22,10 +22,16 @@ def evaluate_player_score(game, scores, player,
                           is_over, valid_states, alpha):
     if is_over:
         alpha = 1  # force to count stones ingame
-    return scores[player] \
-        - (alpha * empty_chain_length(game, player)) \
-        + (alpha * count_stones(game, player))\
-        + (alpha * len(valid_states))
+    s = scores[player] \
+        + (alpha * count_stones(game, player))
+
+
+    # s = scores[player] \
+    #     - (alpha * empty_chain_length(game, player)) \
+    #     + (alpha * count_stones(game, player))\
+    #     + (alpha * len(valid_states))
+
+    return s
 
 
 def player_evaluation(game, scores, current_player,
@@ -34,8 +40,11 @@ def player_evaluation(game, scores, current_player,
                 game=game, scores=scores, is_over=is_over,
                 valid_states=valid_states, alpha=alpha)
 
-    return f(player=current_player) - f(player=other_player(current_player))
+    s = f(player=current_player) - f(player=other_player(current_player))
 
+    if is_over:
+        s *= 1000
+    return s
 
 def min_max(current_player, depth, alpha, state):
     game, scores, player = state

@@ -164,5 +164,5 @@ class GameState(object):
         except KeyError:
             raise WrongMove("%s is not a valid move." % letter)
 
-        self.play_index(player, index)
+        self.play_index(index)
 
