@@ -30,8 +30,7 @@ def send(sock, msg_type, msg_val):
     not part of the protocol which is socket independant.
     """
     msg = encode_message(msg_type, msg_val)
-    d = "%d\n\n%s" % (len(msg), msg)
-    return sock.send(d)
+    return sock.send(msg)
 
 
 def game_state(game):

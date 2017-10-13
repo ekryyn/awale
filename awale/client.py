@@ -3,6 +3,7 @@ import socket
 import sys
 
 from protocol import extract_msg, send, decode_message
+from gui.console import Console
 
 PORT = 1889
 
@@ -57,4 +58,4 @@ def run(tcp_ip, tcp_port, gui, ai=None):
     sock.close()
 
 if __name__ == "__main__":
-    run(sys.argv[1], PORT)
+    run(sys.argv[1], PORT, Console())
